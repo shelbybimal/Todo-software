@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center mb-4">Todo App</h1>
+    <div class="input-group mb-3">
+        <input type="text" id="taskInput" class="form-control" placeholder="Enter a new task">
+        <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+    </div>
+    <ul id="taskList" class="list-group">
+        <!-- Tasks will appear here -->
+    </ul>
+    <div class="mt-3 text-center">
+        <button class="btn btn-danger" onclick="confirmDeleteAll()">Delete All Tasks</button>
+    </div>
+</div>
+
+<script>
+    const taskList = document.getElementById('taskList');
+    const taskInput = document.getElementById('taskInput');
+
+    // Load tasks from localStorage
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    renderTasks();
+
+    function addTask() {
+        const taskText = taskInput.value.trim();
+        if (taskText === '') {
+            alert('Please enter a task!');
+            return;
+        }
+
+        const newTask = { text: taskText, completed: false };
+        tasks.push(newTask);
+        saveTasks();
+        renderTasks();
+        taskInput.value = '';
+    }
+
+    function toggleTask(index) {
+        tasks[index].completed = !tasks[index].completed;
+        saveTasks();
+        renderTasks();
+    }
+
+    function editTask(index) {
+        const newText = prompt('Edit your task:', tasks[index].text);
+        if (newText !== null && newText.trim() !== '') {
+            if (confirm('Are you sure you want to edit this task?')) {
+                tasks[index].text = newText.trim();
+                saveTasks();
+                renderTasks();
+            }
+        }
+    }
+
+    function deleteTask(index) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        }
+    }
+
+    function confirmDeleteAll() {
+        if (confirm('Are you sure you want to delete all tasks?')) {
+            tasks = [];
+            saveTasks();
+            renderTasks();
+        }
+    }
+
+    function saveTasks() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+        taskList.innerHTML = '';
+        tasks.forEach((task, index) => {
+            const taskItem = document.createElement('li');
+            taskItem.className = `list-group-item d-flex justify-content-between align-items-center ${task.completed ? 'list-group-item-success' : ''}`;
+
+            taskItem.innerHTML = `
+                <span style="cursor: pointer;" onclick="toggleTask(${index})">
+                    ${task.completed ? '<del>' + task.text + '</del>' : task.text}
+                </span>
+                <div>
+                    <button class="btn btn-sm btn-warning me-2" onclick="editTask(${index})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteTask(${index})">Delete</button>
+                </div>
+            `;
+
+            taskList.appendChild(taskItem);
+        });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
